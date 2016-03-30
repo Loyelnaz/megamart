@@ -1,0 +1,64 @@
+{% extends 'product_manager/dashboard.html' %}
+
+{% block content %}
+
+<h2> <a href="{% url 'product_manager:home' %}">Products</a> <small>&gt;</small> 
+	{% if product %}
+		Edit
+	{% else %}
+	<a href="{% url 'product_manager:category' category.id %}">{{ category.title }}</a> <small>&gt;</small>
+	New
+	{% endif %}
+</h2>
+
+<ul class="messages" id="messages">
+    <li class="success" id="success">
+    	
+    </li>
+</ul>
+
+<div class="grid full-width content-center">
+	<div class="form-container">
+		<form method="POST" action="" id="add_prod_form">
+		{% csrf_token %}
+			<input type="text" name="title" placeholder="Product Title" autofocus required value="{{ product.name }}">
+			<input type="text" name="price" placeholder="Price/Unit" autofocus required value="{{ product.price }}">
+
+			<input type="submit" class="btn" value="{% if product %}Update{% else %}Add{% endif %}" id="submit_btn">
+		</form>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block nav_products %}active{% endblock %}
+
+{% block javascript %}
+<script>
+	$("#messages").hide();
+
+	$("#submit_btn").click(function(event) {
+		event.preventDefault();
+		var formData = $("#add_prod_form").serialize();
+
+		$.ajax({
+			type: "POST",
+			url: "{% if product %}{% url 'product_manager:edit_product' product.id %}{% else %}{% url 'product_manager:add_product' category.id %}{% endif %}",
+			data: formData,
+			success: function(data) {
+				$("#messages").show();
+				var successStr = "<i class=\"fa fa-fw fa-check\"></i> Product  \
+				<strong>" + data['product_title'] + "</strong> has been added successfully!";
+
+				$("#success").html(successStr);
+
+		        $("#success").delay(5000).fadeOut('slow');
+
+			},
+			error: function(response, error) {
+				console.log(error);
+			}
+		})
+	}) 
+</script>
+{% endblock %}
